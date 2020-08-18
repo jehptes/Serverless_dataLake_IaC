@@ -1,9 +1,20 @@
 provider "aws" {
   region  = "us-east-1"
-  access_key = ""
-  secret_key = ""
+  access_key = my_access_key
+  secret_key = my_secret_key
 }
 
+
+
+variable "my_access_key" {
+  description = "This is my access key"
+  type = string
+}
+
+variable "my_secret_key" {
+  description = "This is my secret key"
+  type = string
+}
 
 
 # Create S3 Bucket 
