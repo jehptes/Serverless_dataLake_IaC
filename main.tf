@@ -29,6 +29,21 @@ resource "aws_s3_bucket" "jeph-raw-data-bucket" {
 }
 
 
+# Create S3 Bucket to store 
+resource "aws_s3_bucket" "jeph-query-results" {
+  bucket = "jeph-query-results"
+  acl    = "private"
+
+  tags = {
+    Name        = "query-results bucket"
+
+  }
+}
+
+
+
+
+
 # create Glue catalog database
 resource "aws_glue_catalog_database" "demoDatabase" {
   name = "demoDatabase"
@@ -41,7 +56,7 @@ resource "aws_glue_catalog_database" "demoDatabase" {
 resource "aws_glue_crawler" "demoCrawler" {
   database_name = "demoDatabase"
   name          = "demoCrawler"
-  role          = aws_iam_role.glue_role.id
+  role          = aws_iam_role.glue.id
 
   s3_target {
     path = "s3://jeph-raw-data-bucket"
@@ -52,8 +67,8 @@ resource "aws_glue_crawler" "demoCrawler" {
 
 # Create an IAM role
 
-resource "aws_iam_role" "glue_role" {
-  name = "glue_role"
+resource "aws_iam_role" "glue" {
+  name = "AWSGlueServiceRoleDefault"
 
   assume_role_policy = <<EOF
 {
@@ -70,18 +85,26 @@ resource "aws_iam_role" "glue_role" {
   ]
 }
 EOF
-
-  tags = {
-    tag-key = "tag-value"
-  }
 }
+
+
+
+
+# Create an IAM role policy attachment
+
+resource "aws_iam_policy_attachment" "glue_service" {
+  name        = "glue_service"
+  roles       = ["${aws_iam_role.glue.name}"]
+  policy_arn  = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
 
 
 # Create iam policy 
 
-resource "aws_iam_policy" "policy" {
-  name        = "demo-policy"
-  description = "A demo policy"
+resource "aws_iam_role_policy" "my_s3_policy" {
+  name = "my_s3_policy"
+  role = aws_iam_role.glue.id
 
   policy = <<EOF
 {
@@ -92,20 +115,16 @@ resource "aws_iam_policy" "policy" {
         "s3:*"
       ],
       "Effect": "Allow",
-      "Resource": "*"
+      "Resource": [
+        "arn:aws:s3:::jeph-raw-data-bucket/",
+        "arn:aws:s3:::jeph-raw-data-bucket/*"
+      ]
     }
   ]
 }
 EOF
 }
 
-# Create an IAM role policy attachment
-
-resource "aws_iam_policy_attachment" "glue_service" {
-  name        = "glue_service"
-  roles       = ["${aws_iam_role.glue_role.name}"]
-  policy_arn  = aws_iam_policy.policy.arn
-}
 
 
 
