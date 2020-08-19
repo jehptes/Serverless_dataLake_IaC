@@ -18,13 +18,25 @@ variable "my_secret_key" {
 
 
 
-# Create S3 Bucket 
+# Create S3 Bucket to store raw data
 resource "aws_s3_bucket" "jeph-raw-data-bucket" {
   bucket = "jeph-raw-data-bucket"
   acl    = "private"
 
   tags = {
-    Name        = "My bucket"
+    Name        = "Raw data bucket"
+  }
+}
+
+
+# Create S3 Bucket to store processed  data
+resource "aws_s3_bucket" "jeph-processed-data-bucket" {
+  bucket = "jeph-processed-data-bucket"
+  acl    = "private"
+
+  tags = {
+    Name        = "processed data bucket"
+
   }
 }
 
@@ -39,8 +51,6 @@ resource "aws_s3_bucket" "jeph-query-results" {
 
   }
 }
-
-
 
 
 
